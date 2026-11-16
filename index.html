@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FinanceOS">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#06100c">
+<title>FinanceOS</title>
+<style>
+:root{--bg:#f2f2f7;--card:#fff;--text:#1c1c1e;--sub:#8a8a8e;--line:#e5e5ea;--acc:#30d158;--bad:#ff453a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--card:#1c1c1e;--text:#f2f2f7;--line:#2c2c2e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#000;--card:#1c1c1e;--text:#f2f2f7;--line:#2c2c2e;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text",Helvetica,Arial,sans-serif}
+.wrap{max-width:520px;margin:0 auto;padding:14px 14px 110px}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
+h1{font-size:28px;margin:0;letter-spacing:-.5px}
+.card{background:var(--card);border-radius:20px;padding:16px;margin-bottom:14px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--sub);margin:0 0 10px;font-weight:600}
+button,input,select{font:inherit;color:inherit}
+button{border:0;border-radius:12px;background:var(--line);padding:10px 14px}
+button:active{opacity:.6}
+.pri{background:var(--acc);color:#04210f;font-weight:600}
+input,select{width:100%;border:1px solid var(--line);background:transparent;border-radius:12px;padding:11px 12px;outline:none;min-width:0}
+input[type=month]{width:auto}
+.row{display:flex;gap:8px;align-items:center}
+.sp{justify-content:space-between}
+.sm{color:var(--sub);font-size:13px}
+.chart{background:radial-gradient(120% 140% at 25% 0%,#0f2d24,#06100c 70%);color:#eafff5;position:relative}
+.chart .lbl{font-size:11px;letter-spacing:1.6px;color:#6fcfa6;text-transform:uppercase}
+.chart .big{font-size:36px;font-weight:600;letter-spacing:-1px}
+.badge{position:absolute;right:14px;top:14px;background:rgba(8,36,27,.85);border:1px solid #1d5a45;border-radius:12px;padding:6px 10px;font-size:12px;text-align:right}
+.bar{height:8px;border-radius:4px;background:var(--line);margin:6px 0 8px}.bar i{display:block;height:100%;border-radius:4px}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+li:last-child{border:0}
+li .t{flex:1;min-width:0;overflow-wrap:anywhere}
+.chip{font-size:11px;padding:2px 8px;border-radius:6px;background:var(--sub);color:#fff}
+.x{background:none;color:var(--sub);padding:4px 8px}
+.fab{position:fixed;right:18px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:60px;height:60px;border-radius:30px;font-size:32px;line-height:1;padding:0;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px}.seg .on{background:var(--acc);color:#04210f;font-weight:600}
+.io{display:grid;grid-template-columns:1fr 1fr;gap:12px}.io button{background:var(--card);padding:16px;border-radius:18px;font-weight:600}
+dialog{border:0;background:var(--card);color:var(--text);width:100%;max-width:520px;margin:auto auto 0;border-radius:24px 24px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+.f{display:grid;gap:10px}
+textarea{width:100%;height:160px;border:1px solid var(--line);border-radius:12px;background:transparent;color:inherit;padding:10px;font:12px monospace}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));background:#000c;color:#fff;padding:10px 16px;border-radius:14px;z-index:9}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>FinanceOS</h1><input type="month" id="m"></header>
+
+<section class="card chart"><div class="lbl">Balance cumulée</div><div class="big" id="bal"></div><div class="badge" id="var"></div><div id="svg"></div></section>
+
+<section class="card"><h2>Résumé du mois</h2><div id="sum"></div>
+<div class="row sp" style="margin-top:6px"><span class="sm">Budget mensuel</span><input type="number" inputmode="decimal" id="bud" placeholder="€" style="width:110px"></div></section>
+
+<section class="card"><h2>Dépenses par catégorie</h2><div id="cats"></div></section>
+
+<section class="card"><h2>Opérations</h2><ul id="list"></ul></section>
+
+<div class="io"><button id="exp">⬆︎ Exporter</button><button id="imp">⬇︎ Importer</button></div>
+</div>
+
+<button class="pri fab" id="fab" aria-label="Ajouter">+</button>
+
+<dialog id="add"><div class="f">
+  <div class="seg"><button id="tD" class="on">Dépense</button><button id="tR">Revenu</button></div>
+  <input type="number" inputmode="decimal" step="0.01" id="a" placeholder="Montant (€)">
+  <input type="text" id="l" placeholder="Libellé">
+  <select id="c"></select>
+  <input type="date" id="d">
+  <div class="row"><button class="pri" id="ok" style="flex:1">Ajouter</button><button id="no">Annuler</button></div>
+</div></dialog>
+
+<dialog id="io"><div class="f">
+  <h2 id="ioT" style="margin:0"></h2><textarea id="ta" spellcheck="false"></textarea>
+  <div class="row" style="flex-wrap:wrap"><button class="pri" id="ioMain"></button><button id="ioFile"></button><button id="ioX" style="margin-left:auto">Fermer</button></div>
+  <input type="file" id="fi" accept=".json,application/json" hidden>
+</div></dialog>
+
+<script>
+const $=id=>document.getElementById(id),KEY="financeos";
+let F={tx:[],budget:0};
+try{const r=JSON.parse(localStorage.getItem(KEY));if(r)F=Object.assign(F,r)}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(F))}catch(e){}};
+const uid=()=>Math.random().toString(36).slice(2,9);
+const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const eur=n=>n.toLocaleString("fr-FR",{style:"currency",currency:"EUR"});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const CATS=["Logement","Courses","Transport","Loisirs","Santé","Abonnements","Autre"];
+$("c").innerHTML=CATS.map(c=>`<option>${c}</option>`).join("");
+$("m").value=iso(new Date()).slice(0,7);$("d").value=iso(new Date());
+function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2500)}
+
+function chart(){
+  const[Y,M]=$("m").value.split("-").map(Number),pts=[];
+  for(let i=11;i>=0;i--){const d=new Date(Y,M-1-i,1),end=iso(new Date(d.getFullYear(),d.getMonth()+1,0));
+    pts.push({l:d.toLocaleDateString("fr-FR",{month:"short"}).slice(0,3),v:F.tx.filter(t=>t.d<=end).reduce((s,t)=>s+(t.ty==="+"?t.a:-t.a),0)})}
+  const W=700,H=300,L=76,R=16,T=14,B=30,vs=pts.map(p=>p.v),mn=Math.min(...vs),mx=Math.max(...vs);
+  let st=500;while((Math.max(st,Math.ceil(mx/st)*st)-Math.min(0,Math.floor(mn/st)*st))/st>8)st*=2;
+  const lo=Math.min(0,Math.floor(mn/st)*st),hi=Math.max(st,Math.ceil(mx/st)*st),X=i=>L+i*(W-L-R)/11,Yv=v=>T+(hi-v)/(hi-lo)*(H-T-B),y0=Yv(0),xy=pts.map((p,i)=>[X(i),Yv(p.v)]);
+  let d="M"+xy[0];for(let i=1;i<12;i++){const a=xy[i-1],b=xy[i],c=(a[0]+b[0])/2;d+=` C${c},${a[1]} ${c},${b[1]} ${b[0]},${b[1]}`}
+  const last=pts[11].v,dv=last-pts[10].v,G="#2ee6a0",Rd="#ff5a5a";
+  $("bal").textContent=eur(last);$("bal").style.color=last<0?"#ff8a8a":"";
+  $("var").innerHTML=`<b style="color:${dv>=0?G:"#ff6b6b"}">${dv>=0?"▲ +":"▼ "}${eur(dv)}</b><br><span style="color:#6fcfa6">vs mois précédent</span>`;
+  let g="";for(let v=lo;v<=hi;v+=st){const y=Yv(v);g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="${v===0?"#6fcfa6":"#1d4a3a"}" stroke-width="${v===0?2:1}" ${v?'stroke-dasharray="3 6"':""}/><text x="${L-10}" y="${y+7}" fill="${v<0?"#ff8a8a":"#5fae92"}" font-size="20" text-anchor="end">${v.toLocaleString("fr-FR")}</text>`}
+  const area=`${d} L${X(11)},${y0} L${X(0)},${y0} Z`;
+  $("svg").innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block"><defs><filter id="gl" filterUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><clipPath id="ca"><rect x="0" y="0" width="${W}" height="${y0}"/></clipPath><clipPath id="cb"><rect x="0" y="${y0}" width="${W}" height="${H-y0}"/></clipPath></defs>${g}`+
+   `<path d="${area}" fill="${G}" fill-opacity=".18" clip-path="url(#ca)"/><path d="${area}" fill="${Rd}" fill-opacity=".2" clip-path="url(#cb)"/>`+
+   `<path d="${d}" fill="none" stroke="${G}" stroke-width="4" stroke-linecap="round" filter="url(#gl)" clip-path="url(#ca)"/><path d="${d}" fill="none" stroke="${Rd}" stroke-width="4" stroke-linecap="round" filter="url(#gl)" clip-path="url(#cb)"/>`+
+   xy.map((p,i)=>`<circle cx="${p[0]}" cy="${p[1]}" r="${i===11?8:4}" fill="${i===11?"#eafff5":pts[i].v<0?Rd:G}"/>`).join("")+
+   pts.map((p,i)=>`<text x="${X(i)}" y="${H-6}" fill="#5fae92" font-size="20" text-anchor="middle">${p.l}</text>`).join("")+"</svg>"}
+
+function render(){
+  const m=$("m").value,tx=F.tx.filter(t=>t.d.startsWith(m)).sort((a,b)=>b.d.localeCompare(a.d)),sm=ty=>tx.filter(t=>t.ty===ty).reduce((s,t)=>s+t.a,0),inc=sm("+"),exp=sm("-");
+  if(document.activeElement!==$("bud"))$("bud").value=F.budget||"";
+  $("sum").innerHTML=[["Revenus",inc,"var(--acc)"],["Dépenses",exp,"var(--bad)"],["Solde",inc-exp,"var(--text)"]].map(([n,v,c])=>`<div class="row sp"><span class="sm">${n}</span><b style="color:${c}">${eur(v)}</b></div>`).join("")+
+   (F.budget?`<div class="bar"><i style="width:${Math.min(100,exp/F.budget*100)}%;background:${exp>F.budget?"var(--bad)":"var(--acc)"}"></i></div><div class="sm">${eur(F.budget-exp)} restant sur ${eur(F.budget)}</div>`:"");
+  const by={};tx.filter(t=>t.ty==="-").forEach(t=>by[t.c]=(by[t.c]||0)+t.a);
+  $("cats").innerHTML=Object.entries(by).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<div class="row sp sm"><span>${c}</span><span>${eur(v)} · ${Math.round(v/exp*100)} %</span></div><div class="bar"><i style="width:${v/exp*100}%;background:var(--acc)"></i></div>`).join("")||'<p class="sm">Rien à afficher.</p>';
+  $("list").innerHTML=tx.map(t=>`<li><span class="sm">${t.d.slice(8)}/${t.d.slice(5,7)}</span><span class="t">${esc(t.l)}</span><span class="chip">${t.c}</span><b style="color:${t.ty==="+"?"var(--acc)":"var(--text)"}">${t.ty==="+"?"+":"−"}${eur(t.a)}</b><button class="x" data-x="${t.id}">✕</button></li>`).join("")||'<li class="sm">Aucune opération ce mois-ci.</li>';
+  chart()}
+$("m").onchange=render;
+$("bud").oninput=()=>{F.budget=+$("bud").value||0;save();render()};
+$("list").onclick=e=>{const id=e.target.dataset.x;if(id){F.tx=F.tx.filter(t=>t.id!==id);save();render()}};
+
+let ty="-";
+const setTy=t=>{ty=t;$("tD").className=t==="-"?"on":"";$("tR").className=t==="+"?"on":""};
+$("tD").onclick=()=>setTy("-");$("tR").onclick=()=>setTy("+");
+$("fab").onclick=()=>{setTy("-");$("add").showModal()};$("no").onclick=()=>$("add").close();
+$("ok").onclick=()=>{const a=parseFloat($("a").value.replace(",",".")),l=$("l").value.trim();if(!l||!(a>0)){toast("Libellé et montant requis");return}
+  F.tx.push({id:uid(),d:$("d").value||iso(new Date()),l,a,c:$("c").value,ty});$("a").value=$("l").value="";save();$("add").close();render()};
+
+let mode="";const dlg=$("io");
+function openIo(x){mode=x;$("ioT").textContent=x==="exp"?"Exporter mes données":"Importer des données";$("ta").value=x==="exp"?JSON.stringify({fin:F},null,2):"";$("ta").placeholder=x==="imp"?"Colle ici ta sauvegarde (FinanceOS ou LiveOS)…":"";
+  $("ioMain").textContent=x==="exp"?"Copier":"Importer";$("ioFile").textContent=x==="exp"?"Télécharger":"Fichier…";dlg.showModal()}
+$("exp").onclick=()=>openIo("exp");$("imp").onclick=()=>openIo("imp");$("ioX").onclick=()=>dlg.close();
+function doImport(t){try{const d=JSON.parse(t),f=d.fin||d;if(!Array.isArray(f.tx))throw 0;F=Object.assign({tx:[],budget:0},f);save();render();dlg.close();toast("Données importées ✓")}catch(e){toast("Fichier invalide")}}
+$("ioMain").onclick=async()=>{if(mode==="exp"){try{await navigator.clipboard.writeText($("ta").value)}catch(e){$("ta").select();document.execCommand("copy")}$("ioMain").textContent="Copié ✓"}else doImport($("ta").value)};
+$("ioFile").onclick=()=>{if(mode==="exp"){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([$("ta").value],{type:"application/json"}));a.download="financeos-"+iso(new Date())+".json";a.click()}else $("fi").click()};
+$("fi").onchange=e=>{const f=e.target.files[0];if(f)f.text().then(doImport)};
+
+(()=>{const c=document.createElement("canvas");c.width=c.height=180;const x=c.getContext("2d"),g=x.createLinearGradient(0,0,180,180);g.addColorStop(0,"#0f2d24");g.addColorStop(1,"#06100c");x.fillStyle=g;x.fillRect(0,0,180,180);x.fillStyle="#2ee6a0";x.font="bold 110px -apple-system,Helvetica";x.textAlign="center";x.textBaseline="middle";x.fillText("€",90,98);const l=document.createElement("link");l.rel="apple-touch-icon";l.href=c.toDataURL("image/png");document.head.appendChild(l)})();
+render();
+</script>
+</body>
+</html>
